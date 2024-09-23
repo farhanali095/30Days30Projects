@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        input,
+        button,
+        select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: grey;
+        }
+
+        .deleteTask {
+            background-color: #d9534f;
+        }
+
+        .deleteTask:hover {
+            background-color: #c9302c;
+        }
+
+        .completeTask {
+            background-color: #5bc0de;
+        }
+
+        .completeTask:hover {
+            background-color: #31b0d5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>To-Do List</h1>
+        <input type="text" id="taskInput" placeholder="Add task">
+        <button id="addTask">Add</button>
+        <select id="filter">
+            <option value="all">All</option>
+            <option value="completed">Completed</option>
+            <option value="incomplete">Incomplete</option>
+        </select>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        const addButton = document.getElementById('addTask');
+        const taskInput = document.getElementById('taskInput');
+        const taskList = document.getElementById('taskList');
+        const filter = document.getElementById('filter');
+
+        loadTasks();
+
+        function addTask() {
+            const task = taskInput.value.trim();
+            if (task) {
+                createTaskElement(task);
+                taskInput.value = '';
+                saveTasks();
+            } else {
+                alert('Please enter a task');
+            }
+        }
+
+        addButton.addEventListener('click', addTask);
+
+        function createTaskElement(task) {
+            const listItem = document.createElement('li');
+            listItem.textContent = task;
+            listItem.classList.add('incomplete');
+
+            const completeButton = document.createElement('button');
+            completeButton.textContent = 'Complete';
+            completeButton.className = 'completeTask';
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.className = 'deleteTask';
+
+            listItem.appendChild(completeButton);
+            listItem.appendChild(deleteButton);
+            taskList.appendChild(listItem);
+
+            completeButton.addEventListener('click', function () {
+                listItem.classList.toggle('completed');
+                completeButton.textContent = listItem.classList.contains('completed') ? 'Undo' : 'Complete';
+                saveTasks();
+            });
+
+            deleteButton.addEventListener('click', function () {
+                taskList.removeChild(listItem);
+                saveTasks();
+            });
+        }
+
+        function saveTasks() {
+            const tasks = [];
+            taskList.querySelectorAll('li').forEach(function (el) {
+                tasks.push({
+                    text: el.textContent.replace('Complete', '').replace('Undo', '').replace('Delete', '').trim(),
+                    completed: el.classList.contains('completed')
+                });
+            });
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.forEach(task => createTaskElement(task.text, task.completed));
+        }
+
+        filter.addEventListener('change', function () {
+            const filterValue = filter.value;
+            taskList.querySelectorAll('li').forEach(function (el) {
+                if (filterValue === 'completed') {
+                    el.style.display = el.classList.contains('completed') ? 'flex' : 'none';
+                } else if (filterValue === 'incomplete') {
+                    el.style.display = el.classList.contains('completed') ? 'none' : 'flex';
+                } else {
+                    el.style.display = 'flex';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
